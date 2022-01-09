@@ -1,4 +1,4 @@
-import {isPowerOfTwo} from "lib/math.js"
+import { isPowerOfTwo } from "/lib/math";
 
 export async function main (ns) {
     ns.tprint("hello from vscode");
