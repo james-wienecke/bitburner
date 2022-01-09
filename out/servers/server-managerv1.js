@@ -7,12 +7,13 @@ export async function main(ns) {
 		['server', 'joesguns'],
 		['ram', 512],
 		['script', '/work/scripts/basic-hackv3.ns'],
-		['log', false]
-	])
+		['log', false],
+        ['delay', 2000],
+        ['norepeat', false],
+	]);
 
     // custom logging
-    ns.disableLog('ALL');.0
-
+    ns.disableLog('ALL');
 
     const cfg = {
         script: {
@@ -29,14 +30,17 @@ export async function main(ns) {
     if (flags.log) {
         ns.enableLog('print');
         ns.tprint(
-            `running server-managerv1...\n` +
+            `log enabled\n` +
             `building ${cfg.prefix} servers series ${cfg.ram}\n` +
-            `script target: ${cfg.target}`
+            `script: ${cfg.script.path} using ${cfg.script.ramUsage}GB/thread\n` +
+            `script target: ${cfg.target}\n` +
+            `delay: ${flags.delay}ms (${flags.delay / 1000}s)\n` +
+            `will ${(flags.norepeat) ? 'not ' : ''}continue to ${cfg.ram * 2}GB`
             );
     }
 
     while (cfg.ram < serverMaxRam()) {
-        if (flags.log) ns.tprint(`Beginning new cycle for ${cfg.ram}GB servers...`);
+        if (flags.log) ns.print(`Beginning new cycle for ${cfg.ram}GB servers...`);
         // continuously buy all available servers with our existing money
         // our purchased server hostnames are formatted like:
         // <prefix>-<index>_<ram>
@@ -44,6 +48,9 @@ export async function main(ns) {
 
         // set ram for next cycle
         cfg.ram = cfg.ram * 2;
+
+        // if flag isn't set to continue to the next level of ram, exit early
+        if (flags.norepeat) break;
     }
 	ns.tprint(`\n\n\t\tCOMPLETE\n\n\t\t`);
 	ns.tprint(`\n\n\t\tGLOBAL\n\n\t\t`);
@@ -94,7 +101,7 @@ const serverPurchaseCycle = async (ns, {script, ram, target, prefix}, flags) => 
             i++;
         }
         cyclecount++;
-        await ns.sleep(2000);
+        await ns.sleep(flags.delay);
     }
 
     if (flags.log) ns.tprint(`All servers have ${ram}GB of ram!`);
