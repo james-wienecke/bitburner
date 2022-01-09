@@ -22,7 +22,9 @@ export async function main (ns) {
     // testing power of two library functions
     testCorrectPowOfTwo();
 
-
+    testPassNSEnv(ns, 'testing...');
 }
 
-
+const testPassNSEnv = (ns, str) => {
+    ns.tprint(str);
+}
