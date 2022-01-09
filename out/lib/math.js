@@ -2,8 +2,7 @@ import * as constant from "/lib/constants.js";
 
 /** @param {NS} ns **/
 export async function main(ns) {
-
-
+    // this is a function library for common math needed for bitburner scripts
 }
 
 /** 

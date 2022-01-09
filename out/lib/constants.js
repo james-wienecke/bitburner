@@ -1,6 +1,6 @@
 /** @param {NS} ns **/
 export async function main(ns) {
-
+    // this is a library for various bitburner game values that would consume (pretend game) RAM if called with netscript functions
 }
 
 /**
