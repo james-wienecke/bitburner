@@ -15,6 +15,8 @@ export async function main (ns) {
         ns.tprint(math.correctPowerOfTwo(1048577));
         ns.tprint('Correcting value = 262,145 to closest power of 2');
         ns.tprint(math.correctPowerOfTwo(262145));
+        ns.tprint('Correcting value = 1,048,600 to closest power of 2');
+        ns.tprint(math.correctPowerOfTwo(1048600));
     }
 
     // testing power of two library functions
