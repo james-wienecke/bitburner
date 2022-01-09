@@ -53,8 +53,11 @@ const serverPurchaseCycle = async (ns, {script, ram, target, prefix}, flags) => 
         const availableMoney = ns.getServerMoneyAvailable("home");
         const serverCost = ns.getPurchasedServerCost(ram);
         cyclecount = cyclecount % 25;
+        // you fool, this doesn't even make sense?
         if (flags.log && cyclecount === 0) ns.print(
-            `me: can we stop and get ${prefix.toUpperCase()} SERVER ${serverCost.toLocaleString("en-US", { style: 'currency', currency: 'USD' })}\nmom: we have money at home!\nmoney at home: ${availableMoney.toLocaleString("en-US", { style: 'currency', currency: 'USD' })}`
+            `me: can we stop and get ${prefix.toUpperCase()} SERVER\n` +
+            `mom: we have ${serverCost.toLocaleString("en-US", { style: 'currency', currency: 'USD' })} at home!\n` +
+            `money at home: ${availableMoney.toLocaleString("en-US", { style: 'currency', currency: 'USD' })}`
             );
         if (availableMoney > serverCost) {
             // check all existing servers and check if the old server at the current index and previous ram exists
