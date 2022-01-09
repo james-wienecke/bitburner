@@ -11,11 +11,13 @@ export async function main(ns) {
 	])
 
     // custom logging
-    ns.disableLog('ALL');
+    ns.disableLog('ALL');.0
+
 
     const cfg = {
         script: {
             path:           flags.script,
+            ramUsage:       ns.getScriptRam(flags.script),
             moneyBound:     ns.getServerMaxMoney(flags.server) * 0.75,
             secBound:       ns.getServerMinSecurityLevel(flags.server) + 5,
         },
@@ -26,7 +28,11 @@ export async function main(ns) {
 
     if (flags.log) {
         ns.enableLog('print');
-        ns.tprint(`running server-managerv1...\nbuilding ${cfg.prefix} servers series ${cfg.ram}\nscript target: ${cfg.target}`);
+        ns.tprint(
+            `running server-managerv1...\n` +
+            `building ${cfg.prefix} servers series ${cfg.ram}\n` +
+            `script target: ${cfg.target}`
+            );
     }
 
     while (cfg.ram < serverMaxRam()) {
@@ -46,13 +52,13 @@ export async function main(ns) {
 
 const serverPurchaseCycle = async (ns, {script, ram, target, prefix}, flags) => {
     let i = 0;
+    const serverCost = ns.getPurchasedServerCost(ram);
     // cyclecount just keeps track of the number of times we've gone around without buying a server
     // it's used for very funny log message
     let cyclecount = i;
     while (i < purchaseServerLimit()) {
         const availableMoney = ns.getServerMoneyAvailable("home");
-        const serverCost = ns.getPurchasedServerCost(ram);
-        cyclecount = cyclecount % 25;
+        cyclecount = cyclecount % 50;
         // you fool, this doesn't even make sense?
         if (flags.log && cyclecount === 0) ns.print(
             `me: can we stop and get ${prefix.toUpperCase()} SERVER\n` +
@@ -68,11 +74,16 @@ const serverPurchaseCycle = async (ns, {script, ram, target, prefix}, flags) => 
                     if (flags.log) ns.print(`old host: ${oldHost}\nram: ${ns.getServerMaxRam(oldHost)}GB`);
                     ns.killall(oldHost);
                     ns.deleteServer(oldHost);
+
                     if (flags.log) ns.print(`${oldHost} removed. Replacing...`);
 
+                    // time to buy the new server!
                     const hostname = ns.purchaseServer(prefix + '-' + i + '_' + ram, ram);
+
+                    // copy our batch hack script over to the new server
                     await ns.scp(script.path, hostname);
-                    const threads = Math.floor(ns.getServerMaxRam(hostname) / ns.getScriptRam(script.path));
+                    // calculate how many threads we can get away with running the hack at on the new server
+                    const threads = Math.floor(ram / script.ramUsage);
                     ns.exec(script.path, hostname, threads, target, script.moneyBound, script.secBound);
                     if (flags.log) ns.print('Purchased server: ' + hostname);
                 } else if (`${prefix}-${i}_${ram}` === host) {
