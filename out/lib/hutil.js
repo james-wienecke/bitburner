@@ -15,7 +15,7 @@ export function dukeNukem(ns, target) {
         reqPorts--;
     }
     if (ns.fileExists('FTPCrack.exe')) {
-        ns.fptcrack(target);
+        ns.ftpcrack(target);
         reqPorts--;
     }
     if (ns.fileExists('relaySMTP.exe')) {

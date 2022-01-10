@@ -11,9 +11,27 @@ export async function main(ns) {
         ['norepeat', false],    // ??? probably will not stay in to production lol
 	]);
 
+    
+
     const script = {};
     script.dir = "/hack-control/";
     script.path = script.dir + "control.js";
+
+    // atk contains the paths to the hack, grow, and weaken scripts as well as thread multipliers to control how much RAM is put into each
+    const atk = {
+        weak: {
+            p:          script.dir + "atk/weak.js",
+            tRatio:     6,
+        },
+        grow: {
+            p:          script.dir + "atk/grow.js",
+            tRatio:     22,
+        },
+        hack: {
+            p:          script.dir + "atk/hack.js",
+            tRatio:     1,
+        }
+    };
 
     // reserve some ram for home machine
     const homeReserved = 64;
@@ -26,7 +44,7 @@ export async function main(ns) {
     let validServers = allServers.filter(server => ns.getServerRequiredHackingLevel(server) < ns.getHackingLevel());
 
     // own all ownable servers
-    for (server of validServers) {
+    for (let server of validServers) {
         if (!ns.hasRootAccess(server)) {
             dukeNukem(ns, server);
             ns.print(`${server} owned`);
@@ -47,21 +65,7 @@ export async function main(ns) {
         `${moneyOverSec}\tmin sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
     );
 
-    // atk contains the paths to the hack, grow, and weaken scripts as well as thread multipliers to control how much RAM is put into each
-    const atk = {
-        weak: {
-            path:       script.dir + "atk/weak.js",
-            tRatio:     6,
-        },
-        grow: {
-            path:       script.dir + "atk/grow.js",
-            tRatio:     22,
-        },
-        hack: {
-            path:       script.dir + "atk/hack.js",
-            tRatio:     1,
-        }
-    };
+    
 
     // await scp.sleep(delay)
     // } while (norepeat) // while loop ends
