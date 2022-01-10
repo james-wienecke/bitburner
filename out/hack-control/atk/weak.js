@@ -1,6 +1,6 @@
 /** @param {NS} ns **/
 export async function main(ns) {
     while (true) {
-        ns.weaken(ns.args[0]);
+        await ns.weaken(ns.args[0]);
     }
 }

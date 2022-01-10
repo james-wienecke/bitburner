@@ -1,6 +1,6 @@
 /** @param {NS} ns **/
 export async function main(ns) {
     while (true) {
-        ns.hack(ns.args[0]);
+        await ns.hack(ns.args[0]);
     }
 }
