@@ -21,20 +21,20 @@ export async function main(ns) {
     const atk = {
         weak: {
             p:          script.dir + "atk/weak.js",
-            tRatio:     6,
+            tRatio:     8,
         },
         grow: {
             p:          script.dir + "atk/grow.js",
-            tRatio:     22,
+            tRatio:     1,
         },
         hack: {
             p:          script.dir + "atk/hack.js",
-            tRatio:     1,
+            tRatio:     22,
         }
     };
 
     // reserve some ram for home machine
-    const homeReserved = 64;
+    const homeReserved = 128;
 
     // get all servers in the net...
     const allServers = Array.from(breadthFirstSearch(ns, 'home'));
@@ -65,8 +65,14 @@ export async function main(ns) {
         `${moneyOverSec}\tmin sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
     );
 
-    
+    // temp - will be replaced with all valid servers when loop is added
+    let host = 'home';
+
+    // calc threads available to each atk script
+    atk.hack.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.hack.p));
+    atk.grow.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.grow.p));
+    atk.weak.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.weak.p));
 
     // await scp.sleep(delay)
-    // } while (norepeat) // while loop ends
+    // } while (norepeat) // unimplemented loop ends
 }
