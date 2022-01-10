@@ -7,7 +7,8 @@ import { dukeNukem } from "/lib/hutil.js";
 export async function main(ns) {
 	const flags = ns.flags([
 		['log', false],         // should default to false for production code, enables verbose logging
-        ['reserve', 256]
+        ['reserve', 128],       // specify amount of ram to try and leave free on the home machine
+        ['shy', false]           // shy mode will only target home and purchased servers
 	]);
 
     // custom logging
@@ -32,9 +33,6 @@ export async function main(ns) {
             tRatio:     22,
         }
     };
-
-    // reserve some ram for home machine
-    const homeReserved = flags.reserve;
 
     // get all servers in the net...
     const allServers = Array.from(breadthFirstSearch(ns, 'home'));
@@ -77,28 +75,51 @@ export async function main(ns) {
             timeout = ns.getHackTime(moneyOverSec) + 5000;
         }
 
-        // temp - will be replaced with all valid servers when loop is added
-        for (let host of validServers) {
-            if (flags.log) ns.print('max ram on host ' + host + ' is ' + ns.getServerMaxRam(host) + 'GB');
+        if (flags.shy) {
+            for(let host of ns.getPurchasedServers()) {
+                if (flags.log)  {
+                    ns.print('SHY MODE ON');
+                    ns.print('max ram on host ' + host + ' is ' + ns.getServerMaxRam(host) + 'GB');
+                }
+                // calc threads available to each atk script
+                if (host === 'home') {
+                    atk[intent].t = Math.floor((ns.getServerMaxRam(host) - flags.reserve) / ns.getScriptRam(atk[intent].p));
+                } else {
+                    atk[intent].t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk[intent].p));
+                }
+                // check if atk file already exists on host...
+                if (!ns.fileExists(atk[intent].p, host)) {
+                    await ns.scp(atk[intent].p, 'home', host);
+                }
 
-            // calc threads available to each atk script
-            if (host === 'home') {
-
-                atk[intent].t = Math.floor((ns.getServerMaxRam(host) - homeReserved) / ns.getScriptRam(atk[intent].p));
-            } else {
-                atk[intent].t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk[intent].p));
+                // ensure thread calc has produced a num > 0
+                if (atk[intent].t > 0) {
+                    ns.print('running ' + intent + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
+                    ns.exec(atk[intent].p, host, atk[intent].t, moneyOverSec);
+                }
             }
-            
-            // check if atk file already exists on host...
-            if (!ns.fileExists(atk[intent].p, host)) {
-                await ns.scp(atk[intent].p, home, host);
+        } else {
+            for (let host of validServers) {
+                if (flags.log) ns.print('max ram on host ' + host + ' is ' + ns.getServerMaxRam(host) + 'GB');
+                // calc threads available to each atk script
+                if (host === 'home') {
+                    atk[intent].t = Math.floor((ns.getServerMaxRam(host) - flags.reserve) / ns.getScriptRam(atk[intent].p));
+                } else {
+                    atk[intent].t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk[intent].p));
+                }
+                // check if atk file already exists on host...
+                if (!ns.fileExists(atk[intent].p, host)) {
+                    await ns.scp(atk[intent].p, 'home', host);
+                }
+                
+                // ensure thread calc has produced a num > 0
+                if (atk[intent].t > 0) {
+                        ns.print('running ' + intent + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
+                        ns.exec(atk[intent].p, host, atk[intent].t, moneyOverSec);
+                }
             }
 
-
-            ns.print('running ' + intent + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
-            ns.exec(atk[intent].p, host, atk[intent].t, moneyOverSec);
         }
-
         ns.print('waiting ' + timeout + 'ms (' + timeout / 1000 + 's)');
         await ns.sleep(timeout);
     } while (true);
