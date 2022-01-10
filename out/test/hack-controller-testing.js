@@ -1,3 +1,5 @@
+import { Queue, breadthFirstSearch } from "/lib/net";
+
 // this will be the main weaken/grow/hack controller
 export async function main(ns) {
 	const flags = ns.flags([
@@ -8,18 +10,21 @@ export async function main(ns) {
 
     const script = {};
     script.dir = "/test/";
-    script.path = script.dir + "hack-controller-testing.js"
+    script.path = script.dir + "hack-controller-testing.js";
 
-    for(const host of ns.scan().filter(server => !ns.getPurchasedServers().includes(server))) {
-        ns.tprint(`\n` +
-            `${host}\tgrow time: ${ns.getGrowTime(host).toFixed(2)}ms\n` +
-            `${host}\tweak time: ${ns.getWeakenTime(host).toFixed(2)}ms\n` +
-            `${host}\thack time: ${ns.getHackTime(host).toFixed(2)}ms\n\n`
-            );
-    }
+    let servers = Array.from(breadthFirstSearch(ns, 'home'));
 
-    // let growTime = ns.getGrowTime("joesguns");
-    // tprint(ns.getGrowTime("joesguns"));
+    servers = servers.filter(server => ns.getServerRequiredHackingLevel(server) < ns.getHackingLevel());
+
+    const moneyOverSec = servers.reduce((best, current) => {
+        return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
+    });
+
+    ns.tprint(`\n` +
+        `${moneyOverSec}\thack lvl req: ${ns.getServerRequiredHackingLevel(moneyOverSec)}\n` +
+        `${moneyOverSec}\tmax $: $${ns.getServerMaxMoney(moneyOverSec).toFixed(2)}\n` +
+        `${moneyOverSec}\tmin sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
+    );
 
     // atk contains the paths to the hack, grow, and weaken scripts as well as thread multipliers to control how much RAM is put into each
     const atk = {
