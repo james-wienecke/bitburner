@@ -2,6 +2,7 @@ import * as math from "/lib/math";
 import { Queue, breadthFirstSearch } from "/lib/net";
 //import { serverMaxRam } from "/lib/constants.js";
 
+/** @param {NS} ns **/
 export async function main (ns) {
     ns.tprint("hello from vscode");
 

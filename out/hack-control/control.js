@@ -1,7 +1,9 @@
 import { Queue, breadthFirstSearch } from "/lib/net.js";
 import { dukeNukem } from "/lib/hutil.js";
 
-// this will be the main weaken/grow/hack controller
+/** The main controller for dispatching weaken/hack/grow jobs.
+ * @param {NS} ns 
+ */
 export async function main(ns) {
 	const flags = ns.flags([
 		['log', true],         // should default to false for production code, enables verbose logging
@@ -12,6 +14,9 @@ export async function main(ns) {
     const script = {};
     script.dir = "/hack-control/";
     script.path = script.dir + "control.js";
+
+    // reserve some ram for home machine
+    const homeReserved = 64;
 
     // get all servers in the net...
     const allServers = Array.from(breadthFirstSearch(ns, 'home'));
@@ -27,6 +32,8 @@ export async function main(ns) {
             ns.print(`${server} owned`);
         }
     }
+
+    ns.tprint(validServers);
 
     // do { // this will eventually run in a loop
     

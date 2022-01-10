@@ -3,6 +3,10 @@ export async function main(ns) {
     // this is a function library for common utils needed for bitburner scripts
 }
 
+/** Attempts to crack and nuke the hostname it is given
+ *  @param {NS} ns 
+ *  @param {string} target A valid Bitburner server hostname.
+ */
 export function dukeNukem(ns, target) {
     let reqPorts = ns.getServerNumPortsRequired(target);
 
