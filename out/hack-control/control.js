@@ -34,7 +34,7 @@ export async function main(ns) {
     };
 
     // reserve some ram for home machine
-    const homeReserved = 128;
+    const homeReserved = 256;
 
     // get all servers in the net...
     const allServers = Array.from(breadthFirstSearch(ns, 'home'));
@@ -51,28 +51,51 @@ export async function main(ns) {
         }
     }
 
-    ns.tprint(validServers);
+    do {
+        // reduce validServers to the server with the highest yield and least security
+        let moneyOverSec = validServers.reduce((best, current) => {
+            return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
+        });
+        
+        // ns.print(`\n` +
+        //     `${moneyOverSec}\thack lvl req: ${ns.getServerRequiredHackingLevel(moneyOverSec)}\n` +
+        //     `${moneyOverSec}\tmax $: $${ns.getServerMaxMoney(moneyOverSec).toFixed(2)}\n` +
+        //     `${moneyOverSec}\tmin sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
+        // );
 
-    // do { // this will eventually run in a loop
-    
-    // reduce validServers to the server with the highest yield and least security
-    const moneyOverSec = validServers.reduce((best, current) => {
-        return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
-    });
-    ns.print(`\n` +
-        `${moneyOverSec}\thack lvl req: ${ns.getServerRequiredHackingLevel(moneyOverSec)}\n` +
-        `${moneyOverSec}\tmax $: $${ns.getServerMaxMoney(moneyOverSec).toFixed(2)}\n` +
-        `${moneyOverSec}\tmin sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
-    );
+        // set loop intent
+        let intent = 'weak';
+        let timeout = 60000;
+        if (ns.getServerSecurityLevel(moneyOverSec) > ns.getServerMinSecurityLevel(moneyOverSec) + 5) {
+            intent = 'weak';
+            timeout = ns.getWeakenTime(moneyOverSec) + 5000;
+        } else if (ns.getServerMoneyAvailable(moneyOverSec) < ns.getServerMaxMoney(moneyOverSec) * 0.75) {
+            intent = 'grow';
+            timeout = ns.getGrowTime(moneyOverSec) + 5000;
+        } else {
+            intent = 'hack';
+            timeout = ns.getHackTime(moneyOverSec) + 5000;
+        }
 
-    // temp - will be replaced with all valid servers when loop is added
-    let host = 'home';
+        ns.print('loop intent: ' + intent);
 
-    // calc threads available to each atk script
-    atk.hack.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.hack.p));
-    atk.grow.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.grow.p));
-    atk.weak.t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk.weak.p));
+        // temp - will be replaced with all valid servers when loop is added
+        let host = 'home';
+        ns.print('max ram on host ' + host + ' is ' + ns.getServerMaxRam(host) + 'GB');
 
-    // await scp.sleep(delay)
-    // } while (norepeat) // unimplemented loop ends
+        // calc threads available to each atk script
+        if (host === 'home') {
+            atk[intent].t = Math.floor((ns.getServerMaxRam(host) - homeReserved) / ns.getScriptRam(atk[intent].p));
+        } else {
+            atk[intent].t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk[intent].p));
+        }
+
+        // await ns.scp().....
+
+        ns.tprint('running ' + intent + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
+        ns.exec(atk[intent].p, host, atk[intent].t, moneyOverSec);
+
+        ns.print('waiting ' + timeout + 'ms (' + timeout / 1000 + 's)');
+        await ns.sleep(timeout);
+    } while (true);
 }
