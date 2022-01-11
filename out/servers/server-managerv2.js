@@ -92,6 +92,11 @@ const serverPurchaseCycle = async (ns, {script, ram, target, prefix}, flags) => 
                     if (flags.log) ns.print(`${prefix}-${i}_${ram} already exists, skipping to next index...`);
                 }
             }
+            if (ns.getPurchasedServers().length < ns.getPurchasedServerLimit()) {
+                if (flags.log) ns.tprint('Not at server cap, buying new server...');
+                const hostname = ns.purchaseServer(prefix + '-' + i + '_' + ram, ram);
+                if (flags.log) ns.tprint('Bought ' + hostname);
+            }
             i++;
         }
         cyclecount++;

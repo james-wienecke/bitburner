@@ -8,7 +8,8 @@ export async function main(ns) {
 	const flags = ns.flags([
 		['log', false],         // should default to false for production code, enables verbose logging
         ['reserve', 128],       // specify amount of ram to try and leave free on the home machine
-        ['shy', false]           // shy mode will only target home and purchased servers
+        ['shy', false],         // shy mode will only target home and purchased servers
+        ['delay', 500],
 	]);
 
     // custom logging
@@ -74,6 +75,10 @@ export async function main(ns) {
             `min sec: ${ns.getServerMinSecurityLevel(moneyOverSec).toFixed(2)}`
         );
 
+        for (let server of ns.getPurchasedServers()) {
+            validServers.push(server);
+        }
+
         // set loop intent
         let intent = 'weak';
         let timeout = 60000;
@@ -134,6 +139,6 @@ export async function main(ns) {
 
         }
         ns.print(`waiting ${timeout.toFixed(4)} ms (${(timeout / 1000).toFixed(4)}s)`);
-        await ns.sleep(timeout);
+        await ns.sleep(timeout + flags.delay);
     } while (true);
 }
