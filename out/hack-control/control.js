@@ -1,5 +1,6 @@
 import { Queue, breadthFirstSearch } from "/lib/net.js";
 import { dukeNukem } from "/lib/hutil.js";
+import { timeFormat } from "/lib/strings.js";
 
 /** The main controller for dispatching weaken/hack/grow jobs.
  * @param {NS} ns 
@@ -80,6 +81,7 @@ export async function main(ns) {
         if (flags.log) ns.print(`target: ${tgtServer}\n` +
             `hack lvl req: ${ns.getServerRequiredHackingLevel(tgtServer)}\n` +
             `max $: $${ns.getServerMaxMoney(tgtServer).toFixed(2)}\n` +
+            `$ now: $${ns.getServerMoneyAvailable(tgtServer).toFixed(2)}\n` +
             `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(2)}`
         );
 
@@ -103,7 +105,6 @@ export async function main(ns) {
 
         for (let host of validServers) {
             const serverMaxRam = ns.getServerMaxRam(host);
-            if (flags.log) ns.print('max ram on host ' + host + ' is ' + serverMaxRam + 'GB');
             // calc threads available to each atk script
             if (host === 'home') {
                 atk[intent].t = Math.floor((serverMaxRam - flags.reserve) / ns.getScriptRam(atk[intent].p));
@@ -135,7 +136,7 @@ export async function main(ns) {
         // if we hacked on this cycle, we can try picking a new target
         if (intent === 'hack') hasHacked = true;
 
-        ns.print(`waiting ${timeout.toFixed(4)} ms (${(timeout / 1000).toFixed(4)}s)`);
+        if (flags.log) ns.print(`waiting for ${timeFormat(timeout)}...`);
         await ns.sleep(timeout + flags.delay);
     } while (true);
 }

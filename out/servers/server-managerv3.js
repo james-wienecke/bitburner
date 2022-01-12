@@ -1,5 +1,6 @@
 import * as math from "/lib/math";
 import { serverMaxRam, purchaseServerLimit } from "/lib/constants.js";
+import { timeFormat } from "/lib/strings.js";
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -11,7 +12,7 @@ export async function main(ns) {
 	]);
 
     // custom logging
-    ns.disableLog('ALL');
+    ns.disableLog('ALL'); 
 
     const cfg = {
         ram:                math.correctPowerOfTwo(flags.ram),
@@ -24,7 +25,7 @@ export async function main(ns) {
             `log enabled\n` +
             `building ${cfg.prefix} servers series ${cfg.ram}\n` +
             `initial ram: ${cfg.ram}GB\n` +
-            `delay: ${flags.delay}ms (${flags.delay / 1000}s)\n` +
+            `delay: ${flags.delay}ms (${timeFormat(flags.delay)})\n` +
             `will ${(flags.norepeat) ? 'not ' : ''}continue to ${cfg.ram * 2}GB`
             );
     }
@@ -55,14 +56,14 @@ const serverPurchaseCycle = async (ns, {ram, prefix}, flags) => {
     let cyclecount = i;
     while (i < purchaseServerLimit()) {
         const availableMoney = ns.getServerMoneyAvailable("home");
-        cyclecount = cyclecount % 50;
+        cyclecount = cyclecount % 100;
         // you fool, this doesn't even make sense?
         if (flags.log && cyclecount === 0) ns.print(
-            `me: can we stop and get ${prefix.toUpperCase()} SERVER\n` +
+            `me: can we stop and get ${prefix.toUpperCase() + ram}GB SERVER\n` +
             `mom: we have ${serverCost.toLocaleString("en-US", { style: 'currency', currency: 'USD' })} at home!\n` +
             `money at home: ${availableMoney.toLocaleString("en-US", { style: 'currency', currency: 'USD' })}`
             );
-        if (availableMoney > serverCost) {
+        if (availableMoney > serverCost * 1.25) {
             // check all existing servers and check if the old server at the current index and previous ram exists
             const oldHost = `${prefix}-${i}_${ram / 2}`;
             for (let host of ns.getPurchasedServers()) {
