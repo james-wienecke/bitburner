@@ -82,7 +82,8 @@ export async function main(ns) {
             `hack lvl req: ${ns.getServerRequiredHackingLevel(tgtServer)}\n` +
             `max $: $${ns.getServerMaxMoney(tgtServer).toFixed(2)}\n` +
             `$ now: $${ns.getServerMoneyAvailable(tgtServer).toFixed(2)}\n` +
-            `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(2)}`
+            `sec now: ${ns.getServerSecurityLevel(tgtServer).toFixed(0)}\n` +
+            `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(0)}`
         );
 
         for (let server of ns.getPurchasedServers()) {
@@ -102,6 +103,8 @@ export async function main(ns) {
             intent = 'hack';
             timeout = ns.getHackTime(tgtServer) + 5000;
         }
+
+        if (flags.log) ns.print(`${intent === 'weak' ? 'weakening' : intent + 'ing'} this cycle.`);
 
         for (let host of validServers) {
             const serverMaxRam = ns.getServerMaxRam(host);
