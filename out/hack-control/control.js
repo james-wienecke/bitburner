@@ -103,13 +103,23 @@ export async function main(ns) {
         }
 
         for (let host of validServers) {
-            if (flags.log) ns.print('max ram on host ' + host + ' is ' + ns.getServerMaxRam(host) + 'GB');
+            const serverMaxRam = ns.getServerMaxRam(host);
+            if (flags.log) ns.print('max ram on host ' + host + ' is ' + serverMaxRam + 'GB');
             // calc threads available to each atk script
             if (host === 'home') {
-                atk[intent].t = Math.floor((ns.getServerMaxRam(host) - flags.reserve) / ns.getScriptRam(atk[intent].p));
+                atk[intent].t = Math.floor((serverMaxRam - flags.reserve) / ns.getScriptRam(atk[intent].p));
             } else {
-                atk[intent].t = Math.floor(ns.getServerMaxRam(host) / ns.getScriptRam(atk[intent].p));
+                atk[intent].t = Math.floor(serverMaxRam / ns.getScriptRam(atk[intent].p));
             }
+
+            // adjust threads per script to allow for running several scripts in parallel per server
+            // could run 500 threads -> run 500 / 25 = 20 threads on 25 instances
+            let numInstances = 1;
+            if (atk[intent].t > 50) {
+                numInstances = Math.floor(atk[intent].t / 20);
+                atk[intent].t = atk[intent].t / numInstances;
+            }
+
             // check if atk file already exists on host...
             if (!ns.fileExists(atk[intent].p, host)) {
                 await ns.scp(atk[intent].p, 'home', host);
@@ -117,8 +127,11 @@ export async function main(ns) {
 
             // ensure thread calc has produced a num > 0
             if (atk[intent].t > 0) {
-                    ns.print('running ' + intent + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
-                    ns.exec(atk[intent].p, host, atk[intent].t, tgtServer);
+                    ns.print('running ' + intent + ' * ' + numInstances + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
+                    // split the intent into multiple instances. by passing the index as an arg, we are able to run multiple copies of the script!
+                    for (let i = 0; i < numInstances; i++) {
+                        ns.exec(atk[intent].p, host, atk[intent].t, tgtServer, i);
+                    }
             }
         }
 
