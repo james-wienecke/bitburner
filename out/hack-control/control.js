@@ -8,7 +8,6 @@ export async function main(ns) {
 	const flags = ns.flags([
 		['log', false],         // should default to false for production code, enables verbose logging
         ['reserve', 128],       // specify amount of ram to try and leave free on the home machine
-        ['shy', false],         // shy mode will only target home and purchased servers
         ['delay', 500],
 	]);
 
