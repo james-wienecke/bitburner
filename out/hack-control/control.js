@@ -65,7 +65,7 @@ export async function main(ns) {
         validServers = validServers.filter(server => ns.hasRootAccess(server));
 
         // if we've completed a full hacking cycle, let's check our targets again and maybe find a newer, juicier target
-        if (hasHacked || tgtServer === 'undefined') {
+        if (hasHacked || tgtServer === undefined) {
             // reduce validServers to the server with the highest yield and least security
             let tgtServer = validServers.reduce((best, current) => {
                 // old selection algo
