@@ -76,6 +76,7 @@ export async function main(ns) {
                 return (ns.getServerMaxMoney(current) / newTotalTime > ns.getServerMaxMoney(best) / oldTotalTime) ? current : best;
             });
             hasHacked = false;
+            if (flags.log) ns.print(`New target ${tgtServer}`);
         }
         
         if (flags.log) ns.print(`target: ${tgtServer}\n` +
@@ -116,7 +117,7 @@ export async function main(ns) {
             // could run 500 threads -> run 500 / 25 = 20 threads on 25 instances
             let numInstances = 1;
             if (atk[intent].t > 50) {
-                numInstances = Math.floor(atk[intent].t / 20);
+                numInstances = Math.floor(atk[intent].t / 100);
                 atk[intent].t = atk[intent].t / numInstances;
             }
 
@@ -127,19 +128,18 @@ export async function main(ns) {
 
             // ensure thread calc has produced a num > 0
             if (atk[intent].t > 0) {
-                    ns.print('running ' + intent + ' * ' + numInstances + ' with ' + atk[intent].t + ' threads (' + ns.getScriptRam(atk[intent].p) * atk[intent].t + 'GB)');
                     // split the intent into multiple instances. by passing the index as an arg, we are able to run multiple copies of the script!
                     for (let i = 0; i < numInstances; i++) {
+                        //await ns.sleep(1);
                         ns.exec(atk[intent].p, host, atk[intent].t, tgtServer, i);
                     }
             }
         }
 
+        // if we hacked on this cycle, we can try picking a new target
+        if (intent === 'hack') hasHacked = true;
 
         ns.print(`waiting ${timeout.toFixed(4)} ms (${(timeout / 1000).toFixed(4)}s)`);
         await ns.sleep(timeout + flags.delay);
-
-        // if we hacked on this cycle, we can try picking a new target
-        if (intent === 'hack') hasHacked = true;
     } while (true);
 }
