@@ -113,8 +113,8 @@ export async function main(ns) {
 
             // adjust threads per script to allow for running several scripts in parallel per server
             let numInstances = 1;
-            if (atk[intent].t > 150) {
-                numInstances = Math.floor(atk[intent].t / 150);
+            if (atk[intent].t > 200) {
+                numInstances = Math.floor(atk[intent].t / 200);
                 atk[intent].t = atk[intent].t / numInstances;
             }
 
