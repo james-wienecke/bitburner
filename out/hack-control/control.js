@@ -67,13 +67,13 @@ export async function main(ns) {
         // if we've completed a full hacking cycle, let's check our targets again and maybe find a newer, juicier target
         if (hasHacked || tgtServer === undefined) {
             // reduce validServers to the server with the highest yield and least security
-            let tgtServer = validServers.reduce((best, current) => {
+            tgtServer = validServers.reduce((best, current) => {
                 // old selection algo
                 // return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
                 // new selection algo
                 let oldTotalTime = ns.getGrowTime(best) + ns.getHackTime(best) + ns.getWeakenTime(best);
                 let newTotalTime = ns.getGrowTime(current) + ns.getHackTime(current) + ns.getWeakenTime(current);
-                return ns.getServerMaxMoney(current) / totalTime > ns.getServerMaxMoney(best) / totalTime ? current : best;
+                return (ns.getServerMaxMoney(current) / newTotalTime > ns.getServerMaxMoney(best) / oldTotalTime) ? current : best;
             });
         }
         
