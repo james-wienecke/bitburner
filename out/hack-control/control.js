@@ -66,7 +66,12 @@ export async function main(ns) {
 
         // reduce validServers to the server with the highest yield and least security
         let moneyOverSec = validServers.reduce((best, current) => {
-            return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
+            // old selection algo
+            // return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
+            // new selection algo
+            let oldTotalTime = ns.getGrowTime(best) + ns.getHackTime(best) + ns.getWeakenTime(best);
+            let newTotalTime = ns.getGrowTime(current) + ns.getHackTime(current) + ns.getWeakenTime(current);
+            return ns.getServerMaxMoney(current) / totalTime > ns.getServerMaxMoney(best) / totalTime ? current : best;
         });
         
         if (flags.log) ns.print(`target: ${moneyOverSec}\n` +
