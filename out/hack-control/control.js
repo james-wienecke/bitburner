@@ -68,8 +68,6 @@ export async function main(ns) {
         if (hasHacked || tgtServer === undefined) {
             // reduce validServers to the server with the highest yield and least security
             tgtServer = validServers.reduce((best, current) => {
-                // old selection algo
-                // return (ns.getServerMaxMoney(current) / ns.getServerMinSecurityLevel(current) > ns.getServerMaxMoney(best) / ns.getServerMinSecurityLevel(best)) ? current : best;
                 // new selection algo
                 let oldTotalTime = ns.getGrowTime(best) + ns.getHackTime(best) + ns.getWeakenTime(best);
                 let newTotalTime = ns.getGrowTime(current) + ns.getHackTime(current) + ns.getWeakenTime(current);
@@ -114,10 +112,9 @@ export async function main(ns) {
             }
 
             // adjust threads per script to allow for running several scripts in parallel per server
-            // could run 500 threads -> run 500 / 25 = 20 threads on 25 instances
             let numInstances = 1;
             if (atk[intent].t > 50) {
-                numInstances = Math.floor(atk[intent].t / 100);
+                numInstances = Math.floor(atk[intent].t / 50);
                 atk[intent].t = atk[intent].t / numInstances;
             }
 
@@ -130,7 +127,6 @@ export async function main(ns) {
             if (atk[intent].t > 0) {
                     // split the intent into multiple instances. by passing the index as an arg, we are able to run multiple copies of the script!
                     for (let i = 0; i < numInstances; i++) {
-                        //await ns.sleep(1);
                         ns.exec(atk[intent].p, host, atk[intent].t, tgtServer, i);
                     }
             }
