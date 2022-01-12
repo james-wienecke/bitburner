@@ -75,6 +75,7 @@ export async function main(ns) {
                 let newTotalTime = ns.getGrowTime(current) + ns.getHackTime(current) + ns.getWeakenTime(current);
                 return (ns.getServerMaxMoney(current) / newTotalTime > ns.getServerMaxMoney(best) / oldTotalTime) ? current : best;
             });
+            hasHacked = false;
         }
         
         if (flags.log) ns.print(`target: ${tgtServer}\n` +
