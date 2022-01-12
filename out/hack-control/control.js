@@ -80,8 +80,8 @@ export async function main(ns) {
         
         if (flags.log) ns.print(`target: ${tgtServer}\n` +
             `hack lvl req: ${ns.getServerRequiredHackingLevel(tgtServer)}\n` +
-            `max $: $${ns.getServerMaxMoney(tgtServer).toFixed(2)}\n` +
-            `$ now: $${ns.getServerMoneyAvailable(tgtServer).toFixed(2)}\n` +
+            `$ now: ${ns.getServerMoneyAvailable(tgtServer).toLocaleString("en-US", { style: 'currency', currency: 'USD' })}\n` +
+            `max $: ${ns.getServerMaxMoney(tgtServer).toLocaleString("en-US", { style: 'currency', currency: 'USD' })}\n` +
             `sec now: ${ns.getServerSecurityLevel(tgtServer).toFixed(0)}\n` +
             `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(0)}`
         );
