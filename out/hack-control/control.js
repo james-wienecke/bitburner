@@ -117,9 +117,25 @@ export async function main(ns) {
 
             // adjust threads per script to allow for running several scripts in parallel per server
             let numInstances = 1;
-            if (atk[intent].t > 200) {
-                numInstances = Math.floor(atk[intent].t / 200);
-                atk[intent].t = atk[intent].t / numInstances;
+            // 256GB server -> 116 threads -> 11 instances of 10 threads
+            if (atk[intent].t > 100 && atk[intent].t <= 1000) {
+                numInstances = Math.floor(atk[intent].t / 10);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 8192GB server -> 3723 threads -> 37 instances of 116 threads
+            if (atk[intent].t > 1000 && atk[intent].t <= 10000) {
+                numInstances = Math.floor(atk[intent].t / 100);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 262144GB server -> 119156 threads -> 119 instances of 1001 threads
+            if (atk[intent].t > 10000 && atk[intent].t <= 100000) {
+                numInstances = Math.floor(atk[intent].t / 1000);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 1048576GB server -> 476625 threads -> 47 instances of 1000 threads
+            if (atk[intent].t > 100000) {
+                numInstances = Math.floor(atk[intent].t / 10000);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
 
             // check if atk file already exists on host...
