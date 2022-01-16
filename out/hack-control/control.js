@@ -1,5 +1,6 @@
 import { Queue, breadthFirstSearch } from "/lib/net.js";
 import { dukeNukem } from "/lib/hutil.js";
+import { timeFormat } from "/lib/strings.js";
 
 /** The main controller for dispatching weaken/hack/grow jobs.
  * @param {NS} ns 
@@ -79,8 +80,10 @@ export async function main(ns) {
         
         if (flags.log) ns.print(`target: ${tgtServer}\n` +
             `hack lvl req: ${ns.getServerRequiredHackingLevel(tgtServer)}\n` +
-            `max $: $${ns.getServerMaxMoney(tgtServer).toFixed(2)}\n` +
-            `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(2)}`
+            `$ now: ${ns.getServerMoneyAvailable(tgtServer).toLocaleString("en-US", { style: 'currency', currency: 'USD' })}\n` +
+            `max $: ${ns.getServerMaxMoney(tgtServer).toLocaleString("en-US", { style: 'currency', currency: 'USD' })}\n` +
+            `sec now: ${ns.getServerSecurityLevel(tgtServer).toFixed(0)}\n` +
+            `min sec: ${ns.getServerMinSecurityLevel(tgtServer).toFixed(0)}`
         );
 
         for (let server of ns.getPurchasedServers()) {
@@ -101,9 +104,10 @@ export async function main(ns) {
             timeout = ns.getHackTime(tgtServer) + 5000;
         }
 
+        if (flags.log) ns.print(`${intent === 'weak' ? 'weakening' : intent + 'ing'} this cycle.`);
+
         for (let host of validServers) {
             const serverMaxRam = ns.getServerMaxRam(host);
-            if (flags.log) ns.print('max ram on host ' + host + ' is ' + serverMaxRam + 'GB');
             // calc threads available to each atk script
             if (host === 'home') {
                 atk[intent].t = Math.floor((serverMaxRam - flags.reserve) / ns.getScriptRam(atk[intent].p));
@@ -113,9 +117,25 @@ export async function main(ns) {
 
             // adjust threads per script to allow for running several scripts in parallel per server
             let numInstances = 1;
-            if (atk[intent].t > 150) {
-                numInstances = Math.floor(atk[intent].t / 150);
-                atk[intent].t = atk[intent].t / numInstances;
+            // 256GB server -> 116 threads -> 11 instances of 10 threads
+            if (atk[intent].t > 100 && atk[intent].t <= 1000) {
+                numInstances = Math.floor(atk[intent].t / 5);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 8192GB server -> 3723 threads -> 37 instances of 116 threads
+            if (atk[intent].t > 1000 && atk[intent].t <= 10000) {
+                numInstances = Math.floor(atk[intent].t / 50);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 262144GB server -> 119156 threads -> 119 instances of 1001 threads
+            if (atk[intent].t > 10000 && atk[intent].t <= 100000) {
+                numInstances = Math.floor(atk[intent].t / 500);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
+            }
+            // 1048576GB server -> 476625 threads -> 47 instances of 1000 threads
+            if (atk[intent].t > 100000) {
+                numInstances = Math.floor(atk[intent].t / 5000);
+                atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
 
             // check if atk file already exists on host...
@@ -135,7 +155,7 @@ export async function main(ns) {
         // if we hacked on this cycle, we can try picking a new target
         if (intent === 'hack') hasHacked = true;
 
-        ns.print(`waiting ${timeout.toFixed(4)} ms (${(timeout / 1000).toFixed(4)}s)`);
+        if (flags.log) ns.print(`waiting for ${timeFormat(timeout)}...`);
         await ns.sleep(timeout + flags.delay);
     } while (true);
 }
