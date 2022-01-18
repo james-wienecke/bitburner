@@ -119,22 +119,22 @@ export async function main(ns) {
             let numInstances = 1;
             // 256GB server -> 116 threads -> 11 instances of 10 threads
             if (atk[intent].t > 100 && atk[intent].t <= 1000) {
-                numInstances = Math.floor(atk[intent].t / 5);
+                numInstances = Math.floor(atk[intent].t / 8);
                 atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
             // 8192GB server -> 3723 threads -> 37 instances of 116 threads
             if (atk[intent].t > 1000 && atk[intent].t <= 10000) {
-                numInstances = Math.floor(atk[intent].t / 50);
+                numInstances = Math.floor(atk[intent].t / 75);
                 atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
             // 262144GB server -> 119156 threads -> 119 instances of 1001 threads
             if (atk[intent].t > 10000 && atk[intent].t <= 100000) {
-                numInstances = Math.floor(atk[intent].t / 500);
+                numInstances = Math.floor(atk[intent].t / 750);
                 atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
             // 1048576GB server -> 476625 threads -> 47 instances of 1000 threads
             if (atk[intent].t > 100000) {
-                numInstances = Math.floor(atk[intent].t / 5000);
+                numInstances = Math.floor(atk[intent].t / 7500);
                 atk[intent].t = Math.floor(atk[intent].t / numInstances);
             }
 
